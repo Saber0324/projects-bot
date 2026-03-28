@@ -30,5 +30,9 @@ async def hello(ctx):
 @bot.command()
 async def meow(ctx):
     await ctx.send("Meow too!")
-    
+
+@bot.command()
+async def hog(ctx):
+    await ctx.send("All hail the supreme leader")
+
 bot.run(token)
