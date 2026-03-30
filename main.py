@@ -37,7 +37,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f"Missing argument: `{error.param.name}`")
     elif isinstance(error, discord.Forbidden):
-        await ctx.send("I don't have permission to do that. Check my role is above the target role.")
+        await ctx.send("I don't have permission to do that.")
     elif isinstance(error, commands.BadArgument):
         await ctx.send(f"Command has a bad argument. Check all parameter are correct.")
     elif isinstance(error, commands.CommandNotFound):
