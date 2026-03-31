@@ -46,7 +46,7 @@ async def on_command_error(ctx, error):
 async def main():
     discord.utils.setup_logging(handler=handler, level=logging.DEBUG)
     async with bot:
-        for cogs in ["cogs.info", "cogs.moderation", "cogs.fun"]:
+        for cogs in ["cogs.info", "cogs.moderation", "cogs.fun","cogs.projects"]:
             await bot.load_extension(cogs)
         await bot.start(token)
 
