@@ -27,7 +27,9 @@ class Snippets(commands.Cog):
                 await ctx.send("Snippet not found. ")
                 return
 
-            message = f"### ***{result[0]}*** \n\n_*{result[1]}*_ \n\n-# — Written by {await self.bot.fetch_user(result[2])}"
+            message = f"""
+                        ### ***{result[0]}*** \n\n_*{result[1]}*_ \n\n-# — Written by {await self.bot.fetch_user(result[2])} {"\n-# — :lock:" if result[3] == 1 else ""}
+                    """ 
             await ctx.send(message)
 
     @snippet.command(aliases = ["a"])
@@ -63,6 +65,8 @@ class Snippets(commands.Cog):
         if result is None:
             await ctx.send("Snippet not found. ")
             return
+        elif result[3] == 1:
+            await ctx.send("This snippet is locked. Ask the author or a moderator to unlock it. ")
         elif result[2] == ctx.author.id:
             await self.bot.db.delete("snippets", "title", title)
             await ctx.send(f"Snippet {title} deleted succesfully. ")
@@ -70,20 +74,44 @@ class Snippets(commands.Cog):
         elif ctx.author.guild_permissions.manage_messages:
             await self.bot.db.delete("snippets", "title", title)
             await ctx.send(f"Snippet {title} deleted succesfully. ")
+            return
         else:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
- 
+    
 
     @snippet.command(aliases = ["lo"])
-    @commands.has_permissions(manage_messages = True)
     async def lock(self, ctx, title: str):
-        pass
+        result = await self.bot.db.get_one("snippets", "title", title)
+        if result is None:
+            await ctx.send("Snippet not found. ")
+            return
+        elif result[2] != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
+            await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
+            return
+        elif result[3] == 1:
+            await ctx.send("This snippet is already locked. ")
+            return
+        else:
+            await self.bot.db.update("snippets", "locked", 1, "title", title)
+            await ctx.send(f"Snippet {title} has been locked. ")
+
 
     @snippet.command(aliases = ["ul"])
-    @commands.has_permissions(manage_messages = True)
     async def unlock(self, ctx, title: str):
-        pass
-
+        result = await self.bot.db.get_one("snippets", "title", title)
+        if result is None:
+            await ctx.send("Snippet not found. ")
+            return
+        elif result[2] != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
+            await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
+            return
+        elif result[3] == 0:
+            await ctx.send("This snippet is already unlocked. ")
+            return
+        else:
+            await self.bot.db.update("snippets", "locked", 0, "title", title)
+            await ctx.send(f"Snippet {title} has been unlocked. ")    
+    
     @snippet.command(name = "list", aliases = ["l"])
     async def snippet_list(self, ctx, title: str):
         pass
