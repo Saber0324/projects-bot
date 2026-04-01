@@ -113,8 +113,19 @@ class Snippets(commands.Cog):
             await ctx.send(f"Snippet {title} has been unlocked. ")    
     
     @snippet.command(name = "list", aliases = ["l"])
-    async def snippet_list(self, ctx, title: str):
-        pass
+    async def snippet_list(self, ctx):
+        group_result = await self.bot.db.get_all("snippets")
+        message = ""
+        if group_result == []:
+            await ctx.send(f"{ctx.author.name} is a bitch. This will only be empty in tests. ")
+            return
+        for result in group_result:
+            if result[3] == 1:
+                message += f"— _*{result[0]}*_ :lock:\n"
+            else:
+                message += f"— _*{result[0]}*_ \n"
+        await ctx.send(message)
+        
 
     @snippet.command(aliases = ["b"])
     @commands.has_permissions(moderate_members = True)
