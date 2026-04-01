@@ -7,7 +7,7 @@ class Database:
     async def setup(self):
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""CREATE TABLE IF NOT EXISTS snippets (
-                                title TEXT UNIQUE,
+                                title TEXT UNIQUE COLLATE NOCASE,
                                 description TEXT,
                                 author_id INTEGER,
                                 locked INTEGER DEFAULT 0)""")
