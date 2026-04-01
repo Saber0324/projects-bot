@@ -18,7 +18,7 @@ class Snippets(commands.Cog):
                 await ctx.send("Snippet not found. ")
                 return
 
-            message = f"### ***{result[0]}*** \n_*{result[1]}*_ \n## -# — Written by {await self.bot.fetch_user(result[2])}"
+            message = f"### ***{result[0]}*** \n\n_*{result[1]}*_ \n\n-# — Written by {await self.bot.fetch_user(result[2])}"
             await ctx.send(message)
 
     @snippet.command(aliases = ["sa"])
