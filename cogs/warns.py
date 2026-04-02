@@ -1,0 +1,56 @@
+from datetime import datetime
+import discord
+from discord.ext import commands 
+from data.database import Database
+
+
+
+class Warns(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.group(invoke_without_command = True, aliases = ["w"])
+    @commands.has_permissions(moderate_members = True)
+    async def warn(self, ctx, user: discord.Member = None, *, reason: str = None):
+        current_date = datetime.utcnow().strftime("%y-%m-%d")
+        moderator = ctx.author
+        if ctx.invoked_subcommand is None and user is None:
+            await ctx.send(f"`!help warn` for more information. ")
+            return
+        elif user:
+            await self.bot.db.insert("warns", (user.id, reason, moderator.id, current_date, None))
+            embed = discord.Embed(title = "_*Warning*_", color=discord.Color.red())
+            embed.set_thumbnail(url="https://raw.githubusercontent.com/Saber0324/projects-bot/main/assets/warn.png")
+            embed.add_field(name="Reason", value= reason, inline= True)
+            embed.set_footer(text=f"Warned by {moderator.name} at {current_date}")
+            await ctx.send(embed=embed)
+            return
+
+    @warn.command(name = "list", aliases = ["l"])
+    async def warn_list(self, ctx, user: discord.Member):
+        warning_lst = await self.bot.db.get_all_where("warns", "user_id", user.id)
+        message = ""
+        if warning_lst == []: 
+            await ctx.send(f"{user.name} doesn't have any warns. ")
+            return
+        for warn in warning_lst:
+            message += f"_*{warn[1]}\n{warn[4]}*_\n-# at {warn[3]} \n-# By {await self.bot.fetch_user(warn[2])}\n\n"
+        embed = discord.Embed(title="Warning List", color=discord.Color.red())
+        embed.set_thumbnail(url=user.display_avatar.url)
+        embed.add_field(name="User", value= user.display_name, inline=False)
+        embed.add_field(name="Warnings", value=message, inline=False)
+        await ctx.send(embed = embed)
+
+    @warn.command(aliases = ["d"])
+    @commands.has_permissions(moderate_members = True)
+    async def delete(self,ctx, warn_id):
+        result = await self.bot.db.get_one("warns", "warn_id", warn_id)
+        if result is None:
+            await ctx.send(f"This warning does not exist. ")
+        else:
+            await self.bot.db.delete("warns", "warn_id", warn_id)
+            await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")
+
+
+async def setup(bot):
+    await bot.add_cog(Warns(bot))

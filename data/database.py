@@ -6,11 +6,23 @@ class Database:
 
     async def setup(self):
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute("""CREATE TABLE IF NOT EXISTS snippets (
+            await db.execute("""
+                            CREATE TABLE IF NOT EXISTS snippets (
                                 title TEXT UNIQUE COLLATE NOCASE,
                                 description TEXT,
                                 author_id INTEGER,
-                                locked INTEGER DEFAULT 0)""")
+                                locked INTEGER DEFAULT 0)
+                            """)
+
+            await db.execute("""
+                            CREATE TABLE IF NOT EXISTS warns (
+                            user_id INTEGER,
+                            reason TEXT,
+                            moderator_id INTEGER,
+                            date TEXT DEFAULT CURRENT_TIMESTAMP,
+                            warn_id INTEGER PRIMARY KEY)
+                            """)
+
             await db.commit()
 
     async def insert(self, table, values: tuple):

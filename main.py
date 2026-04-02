@@ -49,7 +49,7 @@ async def main():
     async with bot:
         bot.db = Database("data/bot.db")
         await bot.db.setup()
-        for cogs in ["cogs.info", "cogs.moderation", "cogs.fun", "cogs.projects", "cogs.snippets"]:
+        for cogs in ["cogs.info", "cogs.moderation", "cogs.fun", "cogs.projects", "cogs.snippets", "cogs.warns"]:
             await bot.load_extension(cogs)
         await bot.start(token)
 
