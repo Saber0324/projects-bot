@@ -15,13 +15,13 @@ class Snippets(commands.Cog):
         self.bot = bot
 
     @commands.group(invoke_without_command = True, aliases = ["s"])
-    async def snippet(self, ctx, target: str = None):
-        if ctx.invoked_subcommand is None and target is None:    
+    async def snippet(self, ctx, title: str = None):
+        if ctx.invoked_subcommand is None and title is None:    
             await ctx.send("`!help snippet` for more information. ")
             return
-        elif target:
+        elif title:
 
-            result = await self.bot.db.get_one("snippets", "title", target)
+            result = await self.bot.db.get_one("snippets", "title", title)
             if result is None:
                 await ctx.send("Snippet not found. ")
                 return
