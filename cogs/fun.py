@@ -15,6 +15,10 @@ class Fun(commands.Cog):
         await ctx.send("Meow too!")
 
     @commands.command()
+    async def fuck_off_iva(self, ctx):
+        await ctx.send("FUCK OFF IVA")
+
+    @commands.command()
     async def hog(self, ctx):
         await ctx.send("All hail the supreme leader")
 
