@@ -1,7 +1,6 @@
 from datetime import datetime
 import discord
 from discord.ext import commands 
-from data.database import Database
 
 
 
@@ -15,7 +14,7 @@ class Warns(commands.Cog):
         current_date = datetime.utcnow().strftime("%y-%m-%d")
         moderator = ctx.author
         if ctx.invoked_subcommand is None and user is None:
-            await ctx.send(f"`!help warn` for more information. ")
+            await ctx.send("`!help warn` for more information. ")
             return
         elif user:
             await self.bot.db.insert("warns", (user.id, reason, moderator.id, current_date, None))
@@ -46,7 +45,7 @@ class Warns(commands.Cog):
     async def delete(self,ctx, warn_id):
         result = await self.bot.db.get_one("warns", "warn_id", warn_id)
         if result is None:
-            await ctx.send(f"This warning does not exist. ")
+            await ctx.send("This warning does not exist. ")
         else:
             await self.bot.db.delete("warns", "warn_id", warn_id)
             await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")

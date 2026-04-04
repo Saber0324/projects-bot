@@ -40,7 +40,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, discord.Forbidden):
         await ctx.send("I don't have permission to do that.")
     elif isinstance(error, commands.BadArgument):
-        await ctx.send(f"Command has a bad argument. Check all parameter are correct.")
+        await ctx.send("Command has a bad argument. Check all parameter are correct.")
     elif isinstance(error, commands.CommandNotFound):
         pass
 

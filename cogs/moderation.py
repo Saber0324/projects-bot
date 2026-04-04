@@ -1,4 +1,5 @@
-import discord, datetime
+import discord
+import datetime
 from discord.ext import commands
 
 class Moderation(commands.Cog):
@@ -48,7 +49,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(manage_roles = True)
     async def role(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send(f"Correct usage: \n`!role add @member role` \n`!role remove @member role`")
+            await ctx.send("Correct usage: \n`!role add @member role` \n`!role remove @member role`")
 
     @role.command()
     async def add(self, ctx, user: discord.Member, role: discord.Role):

@@ -1,5 +1,4 @@
 import discord
-from data.database import Database
 from discord.ext import commands
 
 
@@ -57,7 +56,8 @@ class Snippets(commands.Cog):
             if result[2] == ctx.author.id:
                 await self.bot.db.update("snippets", "description", description, "title", title)
                 await ctx.send(f"Snippet {title} updated succesfully.")
-            else: await ctx.send("This snippet is not yours. Ask the author if you want to edit it.")
+            else:
+                 await ctx.send("This snippet is not yours. Ask the author if you want to edit it.")
 
     @snippet.command(aliases = ["d"])
     async def delete(self, ctx, title):
