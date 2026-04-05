@@ -18,12 +18,12 @@ class Projects(commands.Cog):
 
     # base command: !projects
     @commands.group(invoke_without_command=True)
-    async def projects(self, ctx):
+    async def projects(self, ctx: commands.Context) -> None:
         await ctx.send("Use `!projects help` to see available commands.")
 
     # !projects help/h
     @projects.command(aliases=["h"])
-    async def help(self, ctx):
+    async def help(self, ctx: commands.Context) -> None:
         await ctx.send(
             "**Projects Commands:**\n"
             "`!projects list` → list all projects\n"
@@ -31,9 +31,9 @@ class Projects(commands.Cog):
             "`!projects help` → show this message"
         )
 
-    # !projects list/ls
-    @projects.command(aliases=["ls"])
-    async def list(self, ctx):
+    # !projects list/l
+    @projects.command(aliases=["l"])
+    async def list(self, ctx: commands.Context) -> None:
         msg = "**Current Projects:**\n"
         for name, data in self.projects.items():
             msg += f"- **{name}** → {data['repo']}\n"
@@ -42,13 +42,11 @@ class Projects(commands.Cog):
 
     # !projects release <project_name>
     @projects.command(aliases=["rel"])
-    async def release(self, ctx, project_name: str):
+    async def release(self, ctx: commands.Context, project_name: str) -> None:
         project_name = project_name.lower()
-
         if project_name not in self.projects:
             await ctx.send("Project not found.")
             return
-
         link = self.projects[project_name]["release"]
         await ctx.send(f"Latest release for **{project_name}**:\n{link}")
 

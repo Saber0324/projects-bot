@@ -7,28 +7,28 @@ class Fun(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def hello(self, ctx):
+    async def hello(self, ctx: commands.Context) -> None:
         await ctx.send("Hello, sunshine.")
 
     @commands.command()
-    async def meow(self, ctx):
+    async def meow(self, ctx: commands.Context) -> None:
         await ctx.send("Meow too!")
 
     @commands.command()
-    async def fuck_off_iva(self, ctx):
+    async def fuck_off_iva(self, ctx: commands.Context) -> None:
         await ctx.send("FUCK OFF IVA")
 
     @commands.command()
-    async def hog(self, ctx):
+    async def hog(self, ctx: commands.Context) -> None:
         await ctx.send("All hail the supreme leader")
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
-    async def say(self, ctx, *, arg):
+    async def say(self, ctx: commands.Context, *, arg: str) -> None:
         await ctx.send(arg)
         
     @commands.Cog.listener()
-    async def on_message(self, message:discord.Message):
+    async def on_message(self, message:discord.Message) -> None:
         if message.author.bot:
             return
         if self.bot.user in message.mentions:
@@ -43,5 +43,5 @@ class Fun(commands.Cog):
                 else:
                     await message.reply(random.choice(gif_responses))
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(Fun(bot))
