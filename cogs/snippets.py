@@ -20,7 +20,7 @@ class Snippets(commands.Cog):
         message = ""
         for result in results:
             snippet = Snippet.from_row(result) 
-            if snippet.lock == 1:
+            if snippet.lock == True:
                 message += f"— {snippet.title} :lock: \n\n" # Adds every title to the message. Planned to turn into a paginating embed later (fuck discord.py docs) 
             else:
                 message += f"— {snippet.title} \n\n"
@@ -34,7 +34,7 @@ class Snippets(commands.Cog):
         elif title is not None:
             snippet = await self.get_snippet(ctx, title)
             message = (
-            f"""***`{snippet.title} ->`{":lock:" if snippet.lock == 1 else ""}*** \n{snippet.description}
+            f"""***`{snippet.title} ->`{":lock:" if snippet.lock == True else ""}*** \n{snippet.description}
             \n-# — Written by {await self.bot.fetch_user(snippet.author_id)}
             """
             )
@@ -54,7 +54,7 @@ class Snippets(commands.Cog):
     @snippet.command(aliases = ["e"])
     async def edit(self, ctx: commands.Context, title: str, *, description: str) -> None:
         snippet = await self.get_snippet(ctx, title)
-        if snippet.lock == 1:
+        if snippet.lock == True:
             await ctx.send("This snippet is closed. Ask a moderator to unlock if you want to edit it. ")
         elif snippet.author_id == ctx.author.id:
             await self.bot.db.update("snippets", "description", description, "title", title)
@@ -65,7 +65,7 @@ class Snippets(commands.Cog):
     @snippet.command(aliases = ["d"])
     async def delete(self, ctx: commands.Context, title: str) -> None:
         snippet = await self.get_snippet(ctx, title)
-        if snippet.lock == 1:
+        if snippet.lock == True:
             await ctx.send("This snippet is locked. Ask the author or a moderator to unlock it. ")
         elif snippet.author_id == ctx.author.id or ctx.author.guild_permissions.manage_messages:
             await self.bot.db.delete("snippets", "title", title)
@@ -79,10 +79,10 @@ class Snippets(commands.Cog):
         snippet = await self.get_snippet(ctx, title)
         if snippet.author_id != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
-        elif snippet.lock == 1:
+        elif snippet.lock == True:
             await ctx.send("This snippet is already locked. ")
         else:
-            await self.bot.db.update("snippets", "locked", 1, "title", title)
+            await self.bot.db.update("snippets", "locked", True, "title", title)
             await ctx.send(f"Snippet {title} has been locked. ")
 
 
@@ -91,10 +91,10 @@ class Snippets(commands.Cog):
         snippet = await self.get_snippet(ctx, title)
         if snippet.author_id != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
-        elif snippet.lock == 0:
+        elif snippet.lock == False:
             await ctx.send("This snippet is already unlocked. ")
         else:
-            await self.bot.db.update("snippets", "locked", 0, "title", title)
+            await self.bot.db.update("snippets", "locked", False, "title", title)
             await ctx.send(f"Snippet {title} has been unlocked. ")    
     
     @snippet.command(name = "list", aliases = ["l"])
