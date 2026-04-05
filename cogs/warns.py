@@ -26,7 +26,6 @@ class Warns(commands.Cog):
     @warn.command(name = "list", aliases = ["l"])
     async def warn_list(self, ctx: commands.Context, user: discord.Member) -> None:
         warning_list = await self.bot.db.get_all_where("warns", "user_id", user.id) # Gets list of all warns filtered by user. 
-        message = ""
         if not warning_list: 
             await ctx.send(f"{user.name} doesn't have any warns. ") 
             return
