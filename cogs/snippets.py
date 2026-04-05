@@ -6,7 +6,7 @@ class Snippets(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def get_snippet(self, ctx, title):
+    async def get_snippet(self, ctx: commands.Context, title: str) -> Snippet:
         result = await self.bot.db.get_one("snippets", "title", title)
         if result is None:
             await ctx.send("Snippet not found. ")
@@ -18,7 +18,7 @@ class Snippets(commands.Cog):
 
 
     @commands.group(invoke_without_command = True, aliases = ["s"])
-    async def snippet(self, ctx, title: str = None):
+    async def snippet(self, ctx: commands.Context, title: str = None) -> None:
         if ctx.invoked_subcommand is None and title is None:    
             await ctx.send("`!help snippet` for more information. ")
             return
@@ -28,7 +28,7 @@ class Snippets(commands.Cog):
             await ctx.send(message)
 
     @snippet.command(aliases = ["a"])
-    async def add(self, ctx, title, *, description):
+    async def add(self, ctx: commands.Context, title: str, *, description: str) -> None:
         author = ctx.author.id
         locked = 0
         snippet = await self.get_snippet(ctx, title)
@@ -41,7 +41,7 @@ class Snippets(commands.Cog):
             
 
     @snippet.command(aliases = ["e"])
-    async def edit(self, ctx, title, *, description):
+    async def edit(self, ctx: commands.Context, title: str, *, description: str) -> None:
         snippet = await self.get_snippet(ctx, title)
         if snippet.lock == 1:
             await ctx.send("This snippet is closed. Ask a moderator to unlock if you want to edit it. ")
@@ -54,7 +54,7 @@ class Snippets(commands.Cog):
                  await ctx.send("This snippet is not yours. Ask the author if you want to edit it.")
 
     @snippet.command(aliases = ["d"])
-    async def delete(self, ctx, title):
+    async def delete(self, ctx: commands.Context, title: str) -> None:
         snippet = await self.get_snippet(ctx, title)
         if snippet.lock == 1:
             await ctx.send("This snippet is locked. Ask the author or a moderator to unlock it. ")
@@ -69,7 +69,7 @@ class Snippets(commands.Cog):
     
 
     @snippet.command(aliases = ["lo"])
-    async def lock(self, ctx, title: str):
+    async def lock(self, ctx: commands.Context, title: str) -> None:
         snippet = await self.get_snippet(ctx, title)
         if snippet.author_id != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
@@ -81,7 +81,7 @@ class Snippets(commands.Cog):
 
 
     @snippet.command(aliases = ["ul"])
-    async def unlock(self, ctx, title: str):
+    async def unlock(self, ctx: commands.Context, title: str) -> None:
         snippet = await self.get_snippet(ctx, title)
         if snippet.author_id != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
@@ -94,7 +94,7 @@ class Snippets(commands.Cog):
             await ctx.send(f"Snippet {title} has been unlocked. ")    
     
     @snippet.command(name = "list", aliases = ["l"])
-    async def snippet_list(self, ctx):
+    async def snippet_list(self, ctx: commands.Context) -> None:
         group_result = await self.bot.db.get_all("snippets")
         message = ""
         if group_result == []:
@@ -110,16 +110,16 @@ class Snippets(commands.Cog):
 
     @snippet.command(aliases = ["b"])
     @commands.has_permissions(moderate_members = True)
-    async def ban(self, ctx, user: discord.Member):
+    async def ban(self, ctx: commands.Context, user: discord.Member) -> None:
         pass
 
     @snippet.command(aliases = ["ub"])
     @commands.has_permissions(moderate_members = True)
-    async def unban(self, ctx, user: discord.Member):
+    async def unban(self, ctx: commands.Context, user: discord.Member) -> None:
         pass
 
     @snippet.command(aliases = ["au"])
-    async def author(self, ctx, user: discord.Member):
+    async def author(self, ctx: commands.Context, user: discord.Member) -> None:
         group_result = await self.bot.db.get_all_where("snippets", "author_id", user.id)
         message = ""
         if group_result == []:
@@ -131,5 +131,5 @@ class Snippets(commands.Cog):
                 message += f"— _*{result[0]}*_ \n" # Print without lock emoji.
         await ctx.send(message)       
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(Snippets(bot))

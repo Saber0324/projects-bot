@@ -25,7 +25,7 @@ class Database:
 
             await db.commit()
 
-    async def insert(self, table, values: tuple):
+    async def insert(self, table, values):
         async with aiosqlite.connect(self.db_path) as db:
             placeholders = ", ".join("?" for _ in values)
             await db.execute(f"INSERT INTO {table} VALUES ({placeholders})", values)

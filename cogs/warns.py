@@ -10,7 +10,7 @@ class Warns(commands.Cog):
 
     @commands.group(invoke_without_command = True, aliases = ["w"])
     @commands.has_permissions(moderate_members = True)
-    async def warn(self, ctx, user: discord.Member = None, *, reason: str = None):
+    async def warn(self, ctx, user: discord.Member = None, *, reason: str = None) -> None:
         current_date = datetime.utcnow().strftime("%y-%m-%d")
         moderator = ctx.author
         if ctx.invoked_subcommand is None and user is None:
@@ -26,7 +26,7 @@ class Warns(commands.Cog):
             return
 
     @warn.command(name = "list", aliases = ["l"])
-    async def warn_list(self, ctx, user: discord.Member):
+    async def warn_list(self, ctx: commands.Context, user: discord.Member) -> None:
         warning_lst = await self.bot.db.get_all_where("warns", "user_id", user.id)
         message = ""
         if warning_lst == []: 
@@ -42,7 +42,7 @@ class Warns(commands.Cog):
 
     @warn.command(aliases = ["d"])
     @commands.has_permissions(moderate_members = True)
-    async def delete(self,ctx, warn_id):
+    async def delete(self, ctx: commands.Context, warn_id: int) -> None:
         result = await self.bot.db.get_one("warns", "warn_id", warn_id)
         if result is None:
             await ctx.send("This warning does not exist. ")
@@ -51,5 +51,5 @@ class Warns(commands.Cog):
             await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(Warns(bot))

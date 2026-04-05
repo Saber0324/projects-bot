@@ -10,12 +10,12 @@ class Info(commands.Cog):
         await ctx.send(content=f"Pong {round(number=self.bot.latency * 1000, ndigits=2)} ms!")
     
     @commands.group()
-    async def info(self, ctx) -> None:
+    async def info(self, ctx: commands.Context) -> None:
         if ctx.invoked_subcommand is None:
             await ctx.send("Correct usage: \n`!info server` \n`!info user @user` \n`!info role (count/list/@role)`")
 
     @info.command()
-    async def user(self, ctx: commands.Context, user: discord.Member):
+    async def user(self, ctx: commands.Context, user: discord.Member) -> None:
         embed = discord.Embed(title="User Information", color=discord.Color.blue())
         embed.set_thumbnail(url=user.avatar.url if user.avatar else user.default_avatar.url)
         embed.add_field(name="User Name", value=f"{user.name}", inline=True)
