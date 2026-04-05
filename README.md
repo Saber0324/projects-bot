@@ -131,7 +131,7 @@ python main.py
 projects-bot/
 ├── main.py
 ├── templates
-│   └── models.pVV
+│   └── models.py
 ├── data/
 │   ├── database.py
 │   └── bot.db
