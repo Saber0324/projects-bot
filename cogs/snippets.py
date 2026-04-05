@@ -1,40 +1,51 @@
 import discord
 from discord.ext import commands
-from data.models import Snippet
+from templates.models import Snippet
 
 class Snippets(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def get_snippet(self, ctx: commands.Context, title: str) -> Snippet:
-        result = await self.bot.db.get_one("snippets", "title", title)
+    async def get_snippet(self, ctx: commands.Context, title: str, silent: bool = False) -> Snippet | None:
+        result = await self.bot.db.get_one("snippets", "title", title) 
         if result is None:
-            await ctx.send("Snippet not found. ")
-            return
+            if not silent: # Add doesn't need to check existence. 
+                await ctx.send("Snippet not found. ")
+                return
         else:
-            snippet = Snippet.from_row(result)
+            snippet = Snippet.from_row(result) # Turns result into snippet.title/.description/.author/.lock
             return snippet
 
+    def message_list_builder(self, results: list) -> str: # Doesn't use ctx because it doesn't take input directly from discord. 
+        message = ""
+        for result in results:
+            snippet = Snippet.from_row(result) 
+            if snippet.lock == 1:
+                message += f"— {snippet.title} :lock: \n\n" # Adds every title to the message. Planned to turn into a paginating embed later (fuck discord.py docs) 
+            else:
+                message += f"— {snippet.title} \n\n"
+        return message
 
 
     @commands.group(invoke_without_command = True, aliases = ["s"])
     async def snippet(self, ctx: commands.Context, title: str = None) -> None:
         if ctx.invoked_subcommand is None and title is None:    
             await ctx.send("`!help snippet` for more information. ")
-            return
-        elif title:
+        elif title is not None:
             snippet = await self.get_snippet(ctx, title)
-            message = f"""## ***{snippet.title}***  \n\n_*{snippet.description}*_    \n\n-# — Written by {await self.bot.fetch_user(snippet.author_id)}   \n\n{"-# — :lock:" if snippet.lock == 1 else ""}"""
+            message = (
+            f"""***`{snippet.title} ->`{":lock:" if snippet.lock == 1 else ""}*** \n{snippet.description}
+            \n-# — Written by {await self.bot.fetch_user(snippet.author_id)}
+            """
+            )
             await ctx.send(message)
 
     @snippet.command(aliases = ["a"])
-    async def add(self, ctx: commands.Context, title: str, *, description: str) -> None:
+    async def add(self, ctx: commands.Context, title: str, *, description: str, locked: int = 0) -> None:
         author = ctx.author.id
-        locked = 0
-        snippet = await self.get_snippet(ctx, title)
+        snippet = await self.get_snippet(ctx, title, silent = True)
         if snippet  is not None:
             await ctx.send("This snippet already exists! ")
-            return
         else:
             await self.bot.db.insert("snippets", (title, description, author, locked))
             await ctx.send(f"Snippet {title} created! ")
@@ -45,23 +56,18 @@ class Snippets(commands.Cog):
         snippet = await self.get_snippet(ctx, title)
         if snippet.lock == 1:
             await ctx.send("This snippet is closed. Ask a moderator to unlock if you want to edit it. ")
-            return
+        elif snippet.author_id == ctx.author.id:
+            await self.bot.db.update("snippets", "description", description, "title", title)
+            await ctx.send(f"Snippet {title} updated succesfully.")
         else:
-            if snippet.author_id == ctx.author.id:
-                await self.bot.db.update("snippets", "description", description, "title", title)
-                await ctx.send(f"Snippet {title} updated succesfully.")
-            else:
-                 await ctx.send("This snippet is not yours. Ask the author if you want to edit it.")
+             await ctx.send("This snippet is not yours. Ask the author if you want to edit it.")
 
     @snippet.command(aliases = ["d"])
     async def delete(self, ctx: commands.Context, title: str) -> None:
         snippet = await self.get_snippet(ctx, title)
         if snippet.lock == 1:
             await ctx.send("This snippet is locked. Ask the author or a moderator to unlock it. ")
-        elif snippet.author_id == ctx.author.id:
-            await self.bot.db.delete("snippets", "title", title)
-            await ctx.send(f"Snippet {title} deleted succesfully. ")
-        elif ctx.author.guild_permissions.manage_messages:
+        elif snippet.author_id == ctx.author.id or ctx.author.guild_permissions.manage_messages:
             await self.bot.db.delete("snippets", "title", title)
             await ctx.send(f"Snippet {title} deleted succesfully. ")
         else:
@@ -85,26 +91,16 @@ class Snippets(commands.Cog):
         snippet = await self.get_snippet(ctx, title)
         if snippet.author_id != ctx.author.id and not ctx.author.guild_permissions.manage_messages:
             await ctx.send(f"You're not the author of {title} and don't have permission to do this. ")
-            return
         elif snippet.lock == 0:
             await ctx.send("This snippet is already unlocked. ")
-            return
         else:
             await self.bot.db.update("snippets", "locked", 0, "title", title)
             await ctx.send(f"Snippet {title} has been unlocked. ")    
     
     @snippet.command(name = "list", aliases = ["l"])
     async def snippet_list(self, ctx: commands.Context) -> None:
-        group_result = await self.bot.db.get_all("snippets")
-        message = ""
-        if group_result == []:
-            await ctx.send(f"{ctx.author.name} is a bitch. This will only be empty in tests. ")
-            return
-        for result in group_result:
-            if result[3] == 1: # Lock check.
-                message += f"— _*{result[0]}*_ :lock:\n" #Print the name of the snippets + lock emoji. 
-            else:
-                message += f"— _*{result[0]}*_ \n" # Print without lock emoji.
+        result_list = await self.bot.db.get_all("snippets")
+        message = await self.message_list_builder(result_list)
         await ctx.send(message)
         
 
@@ -121,14 +117,10 @@ class Snippets(commands.Cog):
     @snippet.command(aliases = ["au"])
     async def author(self, ctx: commands.Context, user: discord.Member) -> None:
         group_result = await self.bot.db.get_all_where("snippets", "author_id", user.id)
-        message = ""
         if group_result == []:
             message = "This user hasn't made any snippets. "
-        for result in group_result:
-            if result[3]  == 1: # Lock check.
-                message += f"— _*{result[0]}*_ :lock:\n" # Print the name of the snippets + lock emoji.
-            else:
-                message += f"— _*{result[0]}*_ \n" # Print without lock emoji.
+        else:
+            message = self.message_list_builder(group_result)
         await ctx.send(message)       
 
 async def setup(bot) -> None:
