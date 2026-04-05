@@ -5,7 +5,7 @@ class Snippet:
     title: str
     description: str
     author_id: int
-    lock: bool
+    locked: bool
     
     @classmethod
     def from_row(cls, tuple_obj):

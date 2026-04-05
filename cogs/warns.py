@@ -1,7 +1,7 @@
 from datetime import datetime
 import discord
 from discord.ext import commands
-
+from templates.models import Warn
 class Warns(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -25,13 +25,15 @@ class Warns(commands.Cog):
 
     @warn.command(name = "list", aliases = ["l"])
     async def warn_list(self, ctx: commands.Context, user: discord.Member) -> None:
-        warning_lst = await self.bot.db.get_all_where("warns", "user_id", user.id)
+        warning_list = await self.bot.db.get_all_where("warns", "user_id", user.id) # Gets list of all warns filtered by user. 
         message = ""
-        if warning_lst == []: 
-            await ctx.send(f"{user.name} doesn't have any warns. ")
+        if not warning_list: 
+            await ctx.send(f"{user.name} doesn't have any warns. ") 
             return
-        for warn in warning_lst:
-            message += f"_*{warn[1]}\n{warn[4]}*_\n-# at {warn[3]} \n-# By {await self.bot.fetch_user(warn[2])}\n\n"
+        message = ""
+        for warning in warning_list:
+            warn = Warn.from_row(warning) # Turns warn list into class instances for better readability
+            message += f"_*Warn ID: {warn.warn_id}.*_ \n_*{warn.reason}*_ \nat {warn.date} \nBy {await self.bot.fetch_user(warn.moderator_id)}\n\n"
         embed = discord.Embed(title="Warning List", color=discord.Color.red())
         embed.set_thumbnail(url=user.display_avatar.url)
         embed.add_field(name="User", value= user.display_name, inline=False)
@@ -44,9 +46,9 @@ class Warns(commands.Cog):
         result = await self.bot.db.get_one("warns", "warn_id", warn_id)
         if result is None:
             await ctx.send("This warning does not exist. ")
-        else:
-            await self.bot.db.delete("warns", "warn_id", warn_id)
-            await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")
+            return
+        await self.bot.db.delete("warns", "warn_id", warn_id)
+        await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")
 
 
 async def setup(bot) -> None:
