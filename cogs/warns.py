@@ -47,8 +47,9 @@ class Warns(commands.Cog):
         if result is None:
             await ctx.send("This warning does not exist. ")
             return
+        warn = Warn.from_row(result)
         await self.bot.db.delete("warns", "warn_id", warn_id)
-        await ctx.send(f"Warning {result[4]} for {result[1]} deleted from {await self.bot.fetch_user(result[0])}")
+        await ctx.send(f"Warning ID:{warn.warn_id} for {warn.reason} deleted from {await self.bot.fetch_user(warn.user_id)}")
 
 
 async def setup(bot) -> None:
