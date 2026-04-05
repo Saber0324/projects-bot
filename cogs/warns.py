@@ -17,7 +17,7 @@ class Warns(commands.Cog):
         elif user:
             await self.bot.db.insert("warns", (user.id, reason, moderator.id, current_date, None))
             embed = discord.Embed(title = "_*Warning*_", color=discord.Color.red())
-            embed.set_thumbnail(url="https://raw.githubusercontent.com/Saber0324/projects-bot/main/assets/warn.png")
+            embed.set_thumbnail(url="https://raw.githubusercontent.com/Saber0324/projects-bot/main/assets/warn.png?v=2")
             embed.add_field(name="Reason", value= reason, inline= True)
             embed.set_footer(text=f"Warned by {moderator.name} at {current_date}")
             await ctx.send(embed=embed)
