@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import discord
 from discord.ext import commands, tasks
 import subprocess
@@ -27,50 +28,40 @@ class Eval(commands.Cog):
         self.eval_message_pairs = []
         self.message_list_cleanup.start()
 
+    @staticmethod
+    def get_runner(
+        language: str,
+    ) -> Callable[[str], subprocess.CompletedProcess[str]] | None:
+        lang_dict = {
+            "python": run_python,
+            "go": run_go,
+            "bf": run_bf,
+            "rust": run_rust,
+            "cpp": run_cpp,
+            "cs": run_cs,
+            "c": run_c,
+        }
+
+        aliases = {
+            "py": "python",
+            "golang": "go",
+            "bf": "brainfuck",
+            "rs": "rust",
+            "c++": "cpp",
+            "c#": "cs",
+        }
+
+        runner = aliases.get(language, language)
+        return lang_dict.get(runner)
+
     async def eval_logic(self, language: str, code: str) -> tuple[str, int]:
-        if language.lower() in ("python", "py"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_python, code)
-            )
-        elif language.lower() in ("golang", "go"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_go, code)
-            )
-        elif language.lower() in ("bf", "brainfuck"):
-            bfinput = code[code.find("\n```") + 4 :]
-            print(bfinput)
-            if bfinput.startswith(" "):
-                bfinput = bfinput[1:]
-            if bfinput == code[3:]:
-                bfinput = ""
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_bf, code, bfinput)
-            )
-        elif language.lower() in ("rs", "rust"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_rust, code)
-            )
-        elif language.lower() in ("cpp", "c++"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_cpp, code)
-            )
-        elif language.lower() in ("cs", "c#"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_cs, code)
-            )
-        elif language.lower() == ("c"):
-            loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(run_c, code)
-            )
-        else:
+        if (runner := self.get_runner(language)) is None:
             return "Please, use proper formatting", 1
+        else:
+            loop = asyncio.get_event_loop()
+            docker_sub = await loop.run_in_executor(
+                None, functools.partial(runner, code)
+            )
 
         output = docker_sub.stdout
         return_code = docker_sub.returncode
@@ -79,7 +70,7 @@ class Eval(commands.Cog):
             output += f"\nstderr: {docker_sub.stderr}"
 
         if len(output) >= 500:
-            output = f"{output[:500]} \n\nOutput limited to 500 characters."
+            output = f"{output[:1000]} \n\nOutput limited to 1000 characters."
 
         else:
             output = (
@@ -270,7 +261,12 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def run_bf(code: str, bfinput: str) -> subprocess.CompletedProcess[str]:
+def run_bf(code: str) -> subprocess.CompletedProcess[str]:
+    bfinput = code[code.find("\n```") + 4 :]
+    if bfinput.startswith(" "):
+        bfinput = bfinput[1:]
+    if bfinput == code[3:]:
+        bfinput = ""
     starttime = currenttime()
     cells = bytearray(30000)  # Memory (30kb)
     bfinput += "\0"  # Add a null character to the end of the input
