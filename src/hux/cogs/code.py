@@ -139,7 +139,7 @@ class Eval(commands.Cog):
         self, before: discord.Message, after: discord.Message
     ) -> None:
         for _, user_message in self.eval_message_pairs:
-            if user_message.id == after.id and before.edited_at is None:
+            if user_message.id == after.id:
                 await after.add_reaction("\U0001f501")
 
     @commands.Cog.listener()
