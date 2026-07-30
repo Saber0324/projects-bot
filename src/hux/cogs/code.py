@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import subprocess
 import asyncio
 import functools
@@ -25,6 +25,7 @@ class Eval(commands.Cog):
     def __init__(self, bot: Hux):
         self.bot = bot
         self.eval_message_pairs = []
+        self.message_list_cleanup.start()
 
     async def eval_logic(self, language: str, code: str) -> tuple[str, int]:
         if language.lower() in ("python", "py"):
@@ -180,7 +181,11 @@ class Eval(commands.Cog):
             content=message, allowed_mentions=discord.AllowedMentions.none()
         )
         await reaction.message.clear_reactions()
-        self.eval_message_pairs.remove((bot_reply, user_message))
+
+    @tasks.loop(minutes=30)
+    async def message_list_cleanup(self):
+        if self.eval_message_pairs:
+            self.eval_message_pairs.clear()
 
 
 def run_python(code: str) -> subprocess.CompletedProcess[str]:
