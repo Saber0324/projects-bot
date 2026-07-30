@@ -69,7 +69,7 @@ class Eval(commands.Cog):
         if docker_sub.stderr:
             output += f"\nstderr: {docker_sub.stderr}"
 
-        if len(output) >= 500:
+        if len(output) >= 1000:
             output = f"{output[:1000]} \n\nOutput limited to 1000 characters."
 
         else:
