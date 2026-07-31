@@ -54,14 +54,20 @@ class Eval(commands.Cog):
         runner = aliases.get(language, language)
         return lang_dict.get(runner)
 
-    async def eval_logic(self, language: str, code: str) -> tuple[str, int]:
+    async def eval_logic(
+        self, language: str, code: str, stdin: str | None
+    ) -> tuple[str, int]:
         if (runner := self.get_runner(language)) is None:
             return "Please, use proper formatting", 1
         else:
             loop = asyncio.get_event_loop()
-            docker_sub = await loop.run_in_executor(
-                None, functools.partial(runner, code)
-            )
+
+            if runner == run_bf:
+                func = functools.partial(runner, code, stdin=stdin)
+            else:
+                func = functools.partial(runner, code)
+
+            docker_sub = await loop.run_in_executor(None, func)
 
         output = docker_sub.stdout
         return_code = docker_sub.returncode
