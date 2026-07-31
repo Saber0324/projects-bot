@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, cast
 
 from hux.templates.view import BaseView, CorrectUsageMenu
 from hux.templates.parse import (
-    CODE_PATTERN,
-    extract_code,
+    CODE_PATT3,
+    segregate_code_string,
 )
 
 if TYPE_CHECKING:
@@ -55,17 +55,19 @@ class Eval(commands.Cog):
         return lang_dict.get(runner)
 
     async def eval_logic(
-        self, language: str, code: str, stdin: str | None = None
+        self, language: str, code: str, stdin: list[str]
     ) -> tuple[str, int]:
         if (runner := self.get_runner(language)) is None:
             return "Please, use proper formatting", 1
         else:
             loop = asyncio.get_event_loop()
-
-            if runner == run_bf:
-                func = functools.partial(run_bf, code, stdin=stdin)
-            else:
-                func = functools.partial(runner, code)
+            try:
+                if runner == run_bf:
+                    func = functools.partial(run_bf, code, stdin=stdin[0]) # change stdin to stdin[0]
+                else:
+                    func = functools.partial(runner, code)
+            except e:
+                return f"Some Shit Failed within code.py, in STDIN functools: {e}", 1
 
             docker_sub = await loop.run_in_executor(None, func)
 

@@ -1,7 +1,7 @@
 import re
 
 CODE_PATT3: str = (
-        r'`{3,}\s*(.*?)\s*\n([\s\S]*?)\n\s*`{3,}'
+        r'`{3,}([^\s].*?)\s*\n([\s\S]*?)\n\s*`{3,}'
         )
 
 STDIN_TRIGGER: str = "stdin"
@@ -47,7 +47,7 @@ print(f"your input character is: {c}")
         h
 """,
                                """
-```python
+```    python
 print("hello world")
 c = input("enter any character: ")
 print(f"your input character is: {c}")
