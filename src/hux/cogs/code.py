@@ -63,7 +63,7 @@ class Eval(commands.Cog):
             loop = asyncio.get_event_loop()
 
             if runner == run_bf:
-                func = functools.partial(runner, code, stdin=stdin)
+                func = functools.partial(run_bf, code, stdin=stdin)
             else:
                 func = functools.partial(runner, code)
 
