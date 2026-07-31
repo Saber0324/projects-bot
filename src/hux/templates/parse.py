@@ -1,6 +1,6 @@
 import re
 
-CODE_PATTERN = r"```+\s*(?P<language>\S*)\n(?P<code>.*?)```+(?:\n(?P<stdin>[^\n]*))?"
+CODE_PATTERN = r"```+\s*(?P<language>\S*)\n(?P<code>.*?)```+[ \t]*\n(?P<stdin>[^\n]*)?"
 
 
 def extract_code(pattern: str, text: str) -> dict[str, str]:
