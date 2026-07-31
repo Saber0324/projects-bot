@@ -120,7 +120,7 @@ class Eval(commands.Cog):
             view.message = await ctx.send("Correct usage for:", view=view)
             return
 
-        output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
+        output, return_code = await self.eval_logic(**extract_code(CODE_PATTERN, code))
 
         message = self._format_output(output=output, return_code=return_code)
 
@@ -170,7 +170,7 @@ class Eval(commands.Cog):
             )
             return
 
-        output, return_code = await self.eval_logic(*extract_code(CODE_PATTERN, code))
+        output, return_code = await self.eval_logic(**extract_code(CODE_PATTERN, code))
 
         message = self._format_output(output=output, return_code=return_code)
         logger.info(f"Eval from {reaction.message.author} rerun sent succesfully")
