@@ -45,7 +45,7 @@ class Eval(commands.Cog):
         aliases = {
             "py": "python",
             "golang": "go",
-            "bf": "brainfuck",
+            "brainfuck": "bf",
             "rs": "rust",
             "c++": "cpp",
             "c#": "cs",
