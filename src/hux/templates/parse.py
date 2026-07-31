@@ -1,7 +1,6 @@
 import re
 
-CODE_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n(.*?)```+"
-BF_PATTERN = r"```+[ \t]*(.*?)[ \t]*\n(.*?)```+[ \t]*(?:\n([^\n]*))?"
+CODE_PATTERN = r"```+\s*(?P<language>\S*)\n(?P<code>.*?)```+(?:\n(?P<stdin>[^\n]*))?"
 
 
 def extract_code(pattern: str, text: str) -> tuple[str, str] | tuple[str, str, str]:
