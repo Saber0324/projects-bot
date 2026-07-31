@@ -267,15 +267,13 @@ def run_go(code: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def run_bf(code: str) -> subprocess.CompletedProcess[str]:
-    bfinput = code[code.find("\n```") + 4 :]
-    if bfinput.startswith(" "):
-        bfinput = bfinput[1:]
-    if bfinput == code[3:]:
-        bfinput = ""
+def run_bf(code: str, stdin: str | None) -> subprocess.CompletedProcess[str]:
     starttime = currenttime()
     cells = bytearray(30000)  # Memory (30kb)
-    bfinput += "\0"  # Add a null character to the end of the input
+    if stdin:
+        stdin += "\0"  # Add a null character to the end of the input
+    else:
+        stdin = ""
     inputptr = 0  # Pointer that points to a character in the input
     dp = 0  # Data pointer
 
@@ -283,7 +281,7 @@ def run_bf(code: str) -> subprocess.CompletedProcess[str]:
     jump: list[int | None] = [None] * len(code)  # Jump table
     ip: int = 0  # Instruction pointer
     output = ""  # Output
-    status = subprocess.CompletedProcess(bfinput, 0, "", "")
+    status = subprocess.CompletedProcess(stdin, 0, "", "")
 
     if code.count("[") != code.count("]"):
         status.stderr = "Brackets are unbalanced"
@@ -320,8 +318,9 @@ def run_bf(code: str) -> subprocess.CompletedProcess[str]:
             case ".":
                 output += chr(cells[dp])
             case ",":
-                cells[dp] = ord(bfinput[inputptr])
-                inputptr += 1
+                if stdin:
+                    cells[dp] = ord(stdin[inputptr])
+                    inputptr += 1
             case "[":
                 if not cells[dp]:
                     ip = cast(int, jump[ip])
