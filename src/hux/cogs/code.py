@@ -55,7 +55,7 @@ class Eval(commands.Cog):
         return lang_dict.get(runner)
 
     async def eval_logic(
-        self, language: str, code: str, stdin: str | None
+        self, language: str, code: str, stdin: str | None = None
     ) -> tuple[str, int]:
         if (runner := self.get_runner(language)) is None:
             return "Please, use proper formatting", 1
